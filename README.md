@@ -13,7 +13,7 @@ This sections allows to query for Workspaces that wasn’t changes in the past 3
 
 You can specify that search for a specific owner, and once the search is complete you can Copy the details to Clipboard so you can send it the owner to check if it safe to delete.
 
-![ScreenShot](/HelpImages/1.png)
+![ScreenShot](/HelpImages/1.jpg)
 
 ### Source Control
 For many of my customers Source Control is responsible for Huge DB Size, due to the fact that customers adds not just source files but also binary files.
@@ -26,19 +26,19 @@ For each file and folder you can see the revisions and also copy the item detail
 
 You can also filter to display just deleted items and use the destroy button the completely remove those items from Source Control.
 
-![ScreenShot](/HelpImages/2.png)
+![ScreenShot](/HelpImages/2.jpg)
 
 ### Test Attachment Cleaner
 Same as MS Test Attachment Cleaner but with UI Smile you can specify what file extensions to search and limit the search for work item state.
 
 Of course you can define date range and file attachment size.
 
-![ScreenShot](/HelpImages/3.png)
+![ScreenShot](/HelpImages/3.jpg)
 
 ### Builds
 The builds section allow you to search for builds based on their status, you can search for deleted builds and destroy full build definition with all his children's.
 
-![ScreenShot](/HelpImages/4.png)
+![ScreenShot](/HelpImages/4.jpg)
 
 ## Contributing
 
