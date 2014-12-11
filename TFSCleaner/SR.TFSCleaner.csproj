@@ -56,7 +56,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>BB190D459FC3197631F6EF5F8AF41F6907111E5E</ManifestCertificateThumbprint>
@@ -65,7 +65,7 @@
     <ManifestKeyFile>SR.TFSCleaner_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>SR.TFSCleaner_TemporaryKey.pfx</AssemblyOriginatorKeyFile>
