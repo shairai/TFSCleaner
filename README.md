@@ -1,5 +1,5 @@
 # TFS Cleaner
-
+![ScreenShot](/HelpImages/tfs-cleaner-logo.jpg)
 TFS Cleaner is Administrator tool for TFS that allow cleaning Workspace, Shelves, Source Control, Test Attachment Cleaner and Builds.
 
 ## Installation
