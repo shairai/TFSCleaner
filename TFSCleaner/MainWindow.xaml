@@ -1,0 +1,394 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:SR.TFSCleaner.Converters"
+        xmlns:Helpers="clr-namespace:SR.TFSCleaner.Helpers"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:client="clr-namespace:Microsoft.TeamFoundation.VersionControl.Client;assembly=Microsoft.TeamFoundation.VersionControl.Client"
+        xmlns:controls1="clr-namespace:SR.TFSCleaner.Controls"
+        xmlns:client1="clr-namespace:Microsoft.TeamFoundation.Build.Client;assembly=Microsoft.TeamFoundation.Build.Client"
+        x:Class="SR.TFSCleaner.MainWindow"
+        Title="TFS Cleaner" Height="600" MinHeight="600" MinWidth="800" Width="800" BorderThickness="1" Icon="tfs-cleaner-logo.jpg">
+    <Window.Resources>
+        <ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}" x:Key="DeletedStateValues">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="client:DeletedState" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}" x:Key="ItemTypeValues">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="client:ItemType" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}" x:Key="QueryOptionsValues">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="client1:QueryOptions" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}" x:Key="QueryDeletedOptionValues">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="client1:QueryDeletedOption" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
+        <converters:ChangetsetChangesStringConverter x:Key="ChangetsetChangesStringConverter" />
+        <converters:NegativeBooleanConverter x:Key="NegativeBooleanConverter" />
+        <converters:ItemTypeToImageConverter x:Key="ItemTypeToImageConverter" />
+        <converters:FileSizeFormatConverter x:Key="FileSizeFormatConverter" />
+
+    </Window.Resources>
+    <Grid>
+        <TabControl HorizontalContentAlignment="Stretch" Margin="0,36,0,0" >
+            <TabItem x:Name="WorkspaceAndShelves" Header="Workspace and Shelves" >
+                <Grid IsEnabled="{Binding Working, Converter={StaticResource NegativeBooleanConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="412*"/>
+                        <ColumnDefinition Width="5"/>
+                        <ColumnDefinition Width="415*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="36"/>
+                        <RowDefinition Height="22"/>
+                        <RowDefinition/>
+                        <RowDefinition Height="39"/>
+                    </Grid.RowDefinitions>
+                    <CheckBox Content="Workspaces" HorizontalAlignment="Left" Margin="10,6,0,0" VerticalAlignment="Top" IsChecked="{Binding SearchWorkspaces}" Height="23" Width="89" Grid.ColumnSpan="3"/>
+                    <CheckBox Content="Shelvesets" HorizontalAlignment="Left" Margin="106,6,0,0" VerticalAlignment="Top" IsChecked="{Binding SearchShelvesets}" Height="23" Width="85" Grid.ColumnSpan="3"/>
+                    <ComboBox ItemsSource="{Binding UsersCollection}" TextSearch.TextPath="DisplayName" SelectedItem="{Binding Owner, Mode=TwoWay}" 
+						HorizontalAlignment="Left" Margin="358,3,0,0" VerticalAlignment="Top" Width="160" Grid.ColumnSpan="3" Height="26" IsEditable="True">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding DisplayName}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Button Command="{Binding SearchCommand}"  Content="Search" HorizontalAlignment="Right" Margin="0,5,10,0" VerticalAlignment="Top" Width="75" Grid.Column="2" Height="24"/>
+                    <TextBox HorizontalAlignment="Left" Height="26" Text="{Binding MaxDays}" Margin="255,3,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="45" Grid.ColumnSpan="3"/>
+                    <TextBlock HorizontalAlignment="Left" Margin="196,6,0,0" TextWrapping="Wrap" Text="Max Days:" VerticalAlignment="Top" Height="18" Width="54" Grid.ColumnSpan="3"/>
+                    <TextBlock HorizontalAlignment="Left" Margin="315,6,0,0" TextWrapping="Wrap" Text="Owner:" VerticalAlignment="Top" Height="23" Width="38" Grid.ColumnSpan="3"/>
+                    <ListView SelectionMode="Single" Grid.Row="2" ItemsSource="{Binding Workspaces}" Margin="0,0,0,0">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn DisplayMemberBinding="{Binding Name}" Header="Name" />
+                                <GridViewColumn DisplayMemberBinding="{Binding Computer}" Header="Computer" />
+                                <GridViewColumn DisplayMemberBinding="{Binding LastAccessDate}" Header="Last Access Date" />
+                                <GridViewColumn DisplayMemberBinding="{Binding LastSavedCheckin}" Header="Last Saved Checkin" />
+                                <GridViewColumn DisplayMemberBinding="{Binding Comment}" Header="Comment" />
+                                <GridViewColumn  Header="Data" >
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Expander>
+                                                <Expander.Header>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="Folders Count: "/>
+                                                        <TextBlock Text="{Binding Folders.Length}"/>
+                                                    </StackPanel>
+                                                </Expander.Header>
+                                                <ListBox ItemsSource="{Binding Folders}">
+                                                    <ListBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding ServerItem}"/>
+                                                        </DataTemplate>
+                                                    </ListBox.ItemTemplate>
+                                                </ListBox>
+                                            </Expander>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <ListView SelectionMode="Single" Grid.Row="2" Grid.Column="2" ItemsSource="{Binding Shelvesets}">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn DisplayMemberBinding="{Binding OwnerDisplayName}" Header="Owner" />
+                                <GridViewColumn DisplayMemberBinding="{Binding Name}" Header="Name" />
+                                <GridViewColumn DisplayMemberBinding="{Binding CreationDate}" Header="Creation Date" />
+                                <GridViewColumn DisplayMemberBinding="{Binding Comment}" Header="Comment" />
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <Button Content="Delete" Command="{Binding DeleteCommand}" HorizontalAlignment="Right" Margin="0,10,10,0" Grid.Row="3" VerticalAlignment="Top" Width="75" Grid.Column="2" Height="22"/>
+                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Height="21" Width="147" Grid.Row="1"><Run FontWeight="Bold" Text="Matched Workspaces:"/></TextBlock>
+                    <TextBlock HorizontalAlignment="Right" TextWrapping="Wrap" Text="{Binding Workspaces.Count}" VerticalAlignment="Center" Width="32" Grid.Row="1" Margin="0,4" Height="14"/>
+
+                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Height="21" Width="122" Grid.Row="1" Grid.Column="2" Margin="10,0,0,0"><Run FontWeight="Bold" Text="Matched Shelvesets:"/></TextBlock>
+                    <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Margin="0" Grid.Row="2" Width="5" BorderThickness="1" Background="#FFBBBBBB" ResizeDirection="Columns"/>
+                    <ProgressBar Height="22" Margin="0,0,90,7" Grid.Row="3" Maximum="{Binding TotalItemToDelete}"  Value="{Binding CompletedItems}" IsIndeterminate="{Binding DisplayIsIndeterminate}" VerticalAlignment="Bottom" Grid.ColumnSpan="3"/>
+                    <TextBlock HorizontalAlignment="Right" TextWrapping="Wrap" Text="{Binding Shelvesets.Count}" VerticalAlignment="Center" Width="32" Grid.Row="1" Margin="0,4,0,2" Grid.Column="2" Height="16"/>
+                    <Button Command="{Binding CopyToClipboardCommand}" Content="Copy To Clipboard" Grid.Column="2" HorizontalAlignment="Right" Margin="0,5,90,0" VerticalAlignment="Top" Width="116" Height="24"/>
+
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="SourceControl" Header="Source Control" >
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="350*"/>
+                        <RowDefinition Height="176*"/>
+                        <RowDefinition Height="21*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="138"/>
+                    </Grid.ColumnDefinitions>
+                    <Helpers:ExtendedTreeView SelectedTreeItem="{Binding SelectedSourceControlItem, Mode=TwoWay}" 
+                                              ItemsSource="{Binding SourceControlItems}" Margin="0,25,1,3">
+                        <!--<TreeView.ContextMenu>
+                            <ContextMenu StaysOpen="true">
+                                <MenuItem Header="Scan Full Size" Command="{Binding ScanItemFullSizeCommand}" />
+                            </ContextMenu>
+                        </TreeView.ContextMenu>-->
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="{x:Type TreeViewItem}">
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                                <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                                <Setter Property="FontWeight" Value="Normal" />
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="FontWeight" Value="Bold" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TreeView.ItemContainerStyle>
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                <StackPanel Orientation="Horizontal" Margin="3" ToolTip="{Binding ToolTip}">
+                                    <Image Width="20" Height="20" Source="{Binding ., Converter={StaticResource ItemTypeToImageConverter}}" Margin="0,0,2,0" Stretch="Fill"/>
+                                    <TextBlock Text="{Binding Name}" />
+                                    <TextBlock Text="{Binding Size}"/>
+                                </StackPanel>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </Helpers:ExtendedTreeView>
+                    <ComboBox IsEnabled="{Binding Working, Converter={StaticResource NegativeBooleanConverter}}" ItemsSource="{Binding Source={StaticResource DeletedStateValues}}" SelectedItem="{Binding DeletedState}" Grid.Column="1" HorizontalAlignment="Left" Margin="10,34,0,0" VerticalAlignment="Top" Width="123" Height="22"/>
+                    <TextBlock Grid.Column="1" HorizontalAlignment="Left" Margin="10,13,0,0" TextWrapping="Wrap" Text="Deleted State:" VerticalAlignment="Top" Height="16" Width="74"/>
+                    <ComboBox IsEnabled="{Binding Working, Converter={StaticResource NegativeBooleanConverter}}" ItemsSource="{Binding Source={StaticResource ItemTypeValues}}" SelectedItem="{Binding ItemType}" Grid.Column="1" HorizontalAlignment="Left" Margin="10,89,0,0" VerticalAlignment="Top" Width="123" Height="22"/>
+                    <TextBlock Grid.Column="1" HorizontalAlignment="Left" Margin="10,68,0,0" TextWrapping="Wrap" Text="Item Type:" VerticalAlignment="Top" Height="16" Width="55"/>
+                    <Button Command="{Binding DestroyCommand}" Content="Destroy" HorizontalAlignment="Right" Margin="0,0,5,5" VerticalAlignment="Bottom" Width="123" Height="22" Grid.Column="1" Grid.Row="1" Grid.RowSpan="2">
+
+                    </Button>
+                    <CheckBox IsEnabled="{Binding Working, Converter={StaticResource NegativeBooleanConverter}}" Content="Keep History" Grid.Column="1" HorizontalAlignment="Left" Margin="10,129,0,0" VerticalAlignment="Top" IsChecked="{Binding KeepHistory, Mode=TwoWay}" Height="16" Width="84"/>
+                    <TextBox IsReadOnly="True" Margin="0,3,0,0" TextWrapping="Wrap" 
+                             Text="{Binding ServerItem}" VerticalAlignment="Top" Height="22"/>
+
+                    <ListView Grid.Row="1" ItemsSource="{Binding SelectedItemHistory}" SelectedItem="{Binding SelectedChange}"  VerticalAlignment="Stretch" HorizontalAlignment="Stretch" SelectionMode="Single">
+                        <ListView.View>
+                            <GridView AllowsColumnReorder="true">
+                                <GridViewColumn DisplayMemberBinding="{Binding Path=ChangesetId}" Header="Id" Width="100"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding Path=Changes, Converter={StaticResource ChangetsetChangesStringConverter}}" Header="Change Type" Width="135"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding Path=CommitterDisplayName}" Header="Committer" Width="135"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding Path=CreationDate}" Header="Date" Width="135"/>
+                                <GridViewColumn Header="Comment" Width="200">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock TextWrapping="WrapWithOverflow" Text="{Binding Comment}"></TextBlock>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <ProgressBar IsIndeterminate="{Binding Working}" Height="10" Margin="0,0,0,5" VerticalAlignment="Bottom" Grid.Row="2"/>
+                    <Button Command="{Binding CopyDetailsCommand}" Content="Copy Details" HorizontalAlignment="Right" Margin="0,161,5,0" VerticalAlignment="Top" Width="123" Height="22" Grid.Column="1"/>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="TestAttachmentCleaner" Header="Test Attachment Cleaner">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="80"/>
+                        <RowDefinition/>
+                        <RowDefinition Height="60"/>
+                    </Grid.RowDefinitions>
+                    <Button Command="{Binding SearchCommand}" Content="Search" HorizontalAlignment="Right" Margin="0,8,10,0" VerticalAlignment="Top" Width="76" Height="22"/>
+                    <DatePicker IsEnabled="{Binding Working, Converter={StaticResource NegativeBooleanConverter}}" SelectedDate="{Binding NewerThan}" HorizontalAlignment="Left" Margin="85,10,0,0" VerticalAlignment="Top" Width="150" Height="24"/>
+                    <DatePicker IsEnabled="{Binding Working, Converter={StaticResource NegativeBooleanConverter}}" SelectedDate="{Binding OlderThan}" HorizontalAlignment="Left" Margin="313,10,0,0" VerticalAlignment="Top" Width="150" Height="24"/>
+                    <TextBlock HorizontalAlignment="Left" Margin="10,14,0,0" TextWrapping="Wrap" Text="Newer Than:" VerticalAlignment="Top" Height="16" Width="70"/>
+                    <TextBlock HorizontalAlignment="Left" Margin="244,14,0,0" TextWrapping="Wrap" Text="Older Than:" VerticalAlignment="Top" Height="16" Width="64"/>
+                    <TextBox IsEnabled="{Binding Working, Converter={StaticResource NegativeBooleanConverter}}" HorizontalAlignment="Left" Height="23" Margin="587,10,0,0" TextWrapping="Wrap" Text="{Binding MinimumSize}" VerticalAlignment="Top" Width="50"/>
+                    <ListView Margin="10,10,10,1" ItemsSource="{Binding TestRunAttachmentsInfo}" Grid.Row="1">
+                        <ListView.View>
+                            <GridView AllowsColumnReorder="true">
+                                <GridViewColumn DisplayMemberBinding="{Binding Path=Title}" Header="Run Title" Width="300"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding Path=Owner}" Header="Owner" Width="170"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding Path=DateStarted}" Header="Date Started" Width="135"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding Path=FormatLength}" Header="Total Size" Width="100"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding Path=MatchedAttachments.Count}" Header="Attachments Count" Width="100"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding Path=RelatedWorkitems.Count}" Header="WorkItems Count" Width="100"/>
+                                <GridViewColumn Header="Details" Width="800">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Expander ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                                <StackPanel Orientation="Vertical">
+                                                    <ListView ItemsSource="{Binding MatchedAttachments}">
+                                                        <ListView.View>
+                                                            <GridView AllowsColumnReorder="true">
+                                                                <GridViewColumn DisplayMemberBinding="{Binding Path=Name}" Header="Name" Width="200"/>
+                                                                <GridViewColumn DisplayMemberBinding="{Binding Path=AttachmentType}" Header="Attachment Type" Width="100"/>
+                                                                <GridViewColumn DisplayMemberBinding="{Binding Path=Length, Converter={StaticResource FileSizeFormatConverter}}" Header="Size" Width="100"/>
+                                                                <GridViewColumn DisplayMemberBinding="{Binding Path=Comment}" Header="Comment" Width="100"/>
+                                                            </GridView>
+                                                        </ListView.View>
+                                                    </ListView>
+                                                    <ListView ItemsSource="{Binding RelatedWorkitems}">
+                                                        <ListView.View>
+                                                            <GridView AllowsColumnReorder="true">
+                                                                <GridViewColumn DisplayMemberBinding="{Binding Path=Id}" Header="Id" Width="50"/>
+                                                                <GridViewColumn DisplayMemberBinding="{Binding Path=Title}" Header="Title" Width="100"/>
+                                                                <GridViewColumn DisplayMemberBinding="{Binding Path=AreaPath}" Header="Area Path" Width="180"/>
+                                                                <GridViewColumn DisplayMemberBinding="{Binding Path=CreatedBy}" Header="Created By" Width="120"/>
+                                                                <GridViewColumn DisplayMemberBinding="{Binding Path=CreatedDate}" Header="Created Date" Width="135"/>
+                                                            </GridView>
+                                                        </ListView.View>
+                                                    </ListView>
+                                                </StackPanel>
+                                            </Expander>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+
+                    <ProgressBar Height="10" Margin="10,0" Grid.Row="3" VerticalAlignment="Bottom" Value="{Binding ProgressValue}" Maximum="{Binding ProgressTotalItems}"/>
+                    <TextBlock Margin="10,0,91,14" Grid.Row="2" TextWrapping="Wrap" Text="{Binding ProgressText}" VerticalAlignment="Bottom" Height="16"/>
+                    <TextBlock HorizontalAlignment="Left" Margin="472,14,0,0" TextWrapping="Wrap" Text="Minimum Size: (mb)" VerticalAlignment="Top" Height="16" Width="110"/>
+                    <StackPanel Height="18" Margin="10,0,0,35" VerticalAlignment="Bottom" Orientation="Horizontal" Grid.Row="2" >
+                        <TextBlock Margin="0,0,5,0" TextWrapping="Wrap" Text="Remaining Items: " />
+                        <TextBlock Margin="0,0,10,0" TextWrapping="Wrap" Text="{Binding Path=RemainingItems}" FontWeight="Bold" />
+                        <TextBlock Margin="0,0,5,0" TextWrapping="Wrap" Text="Total Matched Items: " />
+                        <TextBlock Margin="0,0,10,0" TextWrapping="Wrap" Text="{Binding Path=TestRunAttachmentsInfo.Count}" FontWeight="Bold" />
+                        <TextBlock Margin="0,0,5,0" TextWrapping="Wrap" Text="Total Size: " />
+                        <TextBlock Margin="0,0,10,0" TextWrapping="Wrap" Text="{Binding TotalSize}" FontWeight="Bold" />
+                    </StackPanel>
+                    <Button Command="{Binding DeleteCommand}" Content="Delete" HorizontalAlignment="Right" Margin="0,0,10,30" VerticalAlignment="Bottom" Width="76" Height="22" Grid.Row="2"/>
+                    <controls1:CustomComboBox IsEnabled="{Binding Working, Converter={StaticResource NegativeBooleanConverter}}" HorizontalAlignment="Left" DefaultText="Choose file extensions..." Margin="85,48,0,0" ItemsSource="{Binding Extensions}" VerticalAlignment="Top" Width="225">
+                    </controls1:CustomComboBox>
+                    <TextBlock HorizontalAlignment="Left" Margin="10,51,0,0" TextWrapping="Wrap" Text="Extensions:" VerticalAlignment="Top" Height="16" Width="70"/>
+                    <controls1:CustomComboBox IsEnabled="{Binding Working, Converter={StaticResource NegativeBooleanConverter}}" HorizontalAlignment="Left" Margin="358,48,0,0" DefaultText="Choose bug states..." ItemsSource="{Binding States}" VerticalAlignment="Top" Width="225">
+                    </controls1:CustomComboBox>
+                    <TextBlock HorizontalAlignment="Left" Margin="317,51,0,0" TextWrapping="Wrap" Text="States:" VerticalAlignment="Top" Height="16" Width="36"/>
+                    <Button Command="{Binding StopCommand}" Content="Stop" HorizontalAlignment="Right" Margin="0,0,10,7" VerticalAlignment="Bottom" Width="76" Height="22"/>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="BuildDetails" Header="Builds">
+                <Grid>
+                    <Grid.Resources>
+                        <CollectionViewSource x:Key="BuildsCollectionViewSource" Source="{Binding Builds}">
+                            <CollectionViewSource.GroupDescriptions>
+                                <PropertyGroupDescription PropertyName="BuildDefinitionName"/>
+                            </CollectionViewSource.GroupDescriptions>
+                        </CollectionViewSource>
+                    </Grid.Resources>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="200"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="40"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock HorizontalAlignment="Left" Margin="10,7,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="16" Width="0"/>
+                    <ProgressBar IsIndeterminate="{Binding DisplayIsIndeterminate}" Maximum="{Binding ProgressTotalItems}" Value="{Binding ProgressValue}" Height="10" Grid.Row="1" VerticalAlignment="Bottom" Margin="5,0" Grid.ColumnSpan="2"/>
+                    <TextBlock HorizontalAlignment="Left" Margin="5,8,0,0" Grid.Row="1" TextWrapping="Wrap" Text="{Binding ProgressText}" VerticalAlignment="Top" Height="16" Width="0"/>
+
+                    <ListView x:Name="BuildsList" ItemsSource="{Binding Source={StaticResource BuildsCollectionViewSource}}" BorderThickness="0"  Margin="0,0,4,0">
+                        <ListView.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.ContainerStyle>
+                                    <Style TargetType="{x:Type GroupItem}">
+                                        <Setter Property="Margin" Value="0,0,0,5"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="{x:Type GroupItem}">
+                                                    <Expander BorderBrush="#FFA4B97F" BorderThickness="0,0,0,1">
+                                                        <Expander.Header>
+                                                            <DockPanel>
+                                                                <TextBlock FontWeight="Bold" Text="{Binding Path=Name}" Margin="5,0,0,0" />
+                                                                <TextBlock FontWeight="Bold" Text="-" Margin="5,0,5,0" />
+                                                                <TextBlock FontWeight="Bold" Text="{Binding Path=ItemCount}"/>
+                                                            </DockPanel>
+                                                        </Expander.Header>
+                                                        <Expander.Content>
+                                                            <ItemsPresenter />
+                                                        </Expander.Content>
+                                                    </Expander>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </GroupStyle.ContainerStyle>
+                            </GroupStyle>
+                        </ListView.GroupStyle>
+                        <ListView.View>
+                            <GridView AllowsColumnReorder="true">
+                                <GridViewColumn Header="" Width="30">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Image Width="16" Height="16" Source="{Binding ., Converter={StaticResource ItemTypeToImageConverter}}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn DisplayMemberBinding="{Binding Path=Build.BuildNumber}" Header="Name" Width="180"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding Path=Build.FinishTime}" Header="Finish Time" Width="135"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding Path=Build.RequestedBy}" Header="Requested By" Width="120"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding Path=Build.Quality}" Header="Quality" Width="100"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding Path=Build.IsDeleted}" Header="IsDeleted" Width="60"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <GroupBox Header="Search" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,0,0,0" Grid.Column="1" Width="185" Height="154">
+                        <StackPanel>
+                            <TextBlock Text="Query Options:" VerticalAlignment="Center" Margin="5,0,0,3"/>
+                            <ComboBox HorizontalAlignment="Left" IsEnabled="{Binding Working, Converter={StaticResource NegativeBooleanConverter}}" 
+                                          SelectedItem="{Binding SelectedQueryOption, Mode=TwoWay}" ItemsSource="{Binding Source={StaticResource QueryOptionsValues}}" 
+                                          Margin="4,0,0,0" VerticalAlignment="Center" Height="23" Width="160" />
+
+                            <TextBlock Text="Deleted Option:" Margin="5,5,0,0"/>
+                            <ComboBox HorizontalAlignment="Left" IsEnabled="{Binding Working, Converter={StaticResource NegativeBooleanConverter}}"
+                                      SelectedItem="{Binding SelectedQueryDeletedOption, Mode=TwoWay}" ItemsSource="{Binding Source={StaticResource QueryDeletedOptionValues}}" 
+                                      Margin="4,8,0,0" VerticalAlignment="Top" Width="160" Height="23" />
+                            <Button Content="Search" HorizontalAlignment="Center" Command="{Binding SearchCommand}" VerticalAlignment="Top" Margin="10" Width="130"/>
+                        </StackPanel>
+                    </GroupBox>
+                    <controls1:CustomComboBox IsEnabled="{Binding Working, Converter={StaticResource NegativeBooleanConverter}}" HorizontalAlignment="Left" DefaultText="Choose delete options..." Margin="10,362,0,0" ItemsSource="{Binding DeleteOptionsList}" VerticalAlignment="Top" Width="162" Grid.Column="1">
+                    </controls1:CustomComboBox>
+                    <Button Content="Delete" IsEnabled="{Binding Working, Converter={StaticResource NegativeBooleanConverter}}" HorizontalAlignment="Left" Margin="10,389,0,0" Command="{Binding DeleteBuildsCommand}" CommandParameter="{Binding SelectedItems, ElementName=BuildsList}" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="22"/>
+                    <Button Content="Destroy" IsEnabled="{Binding Working, Converter={StaticResource NegativeBooleanConverter}}" HorizontalAlignment="Left" Margin="10,475,0,0" Command="{Binding DestroyBuildsCommand}" CommandParameter="{Binding SelectedItems, ElementName=BuildsList}" VerticalAlignment="Top" Width="75" Grid.Column="1" Foreground="Black" Height="22">
+                        <Button.Background>
+                            <LinearGradientBrush EndPoint="0,1" StartPoint="0,0">
+                                <GradientStop Color="#FFF3F3F3" Offset="0"/>
+                                <GradientStop Color="#FFEBEBEB" Offset="0.5"/>
+                                <GradientStop Color="#FFDDDDDD" Offset="0.5"/>
+                                <GradientStop Color="Red" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                    <TextBlock Grid.Column="1" HorizontalAlignment="Left" Margin="10,346,0,0" TextWrapping="Wrap" Text="Delete Options:" VerticalAlignment="Top" Height="16" Width="162"/>
+                    <GroupBox Header="Destroy Build Definition" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,159,0,0" Grid.Column="1" Width="185" Height="178">
+                        <StackPanel>
+                            <TextBlock TextWrapping="WrapWithOverflow" Margin="3,5"><Run Text="This action will delete all builds then will remove the build record from the database and finally will remove the definition."/></TextBlock>
+                            <ComboBox HorizontalAlignment="Left" IsEnabled="{Binding Working, Converter={StaticResource NegativeBooleanConverter}}" SelectedItem="{Binding SelectedIBuildDefinition, Mode=TwoWay}" ItemsSource="{Binding BuildDefinitions}" Margin="4,8,0,0" VerticalAlignment="Top" Width="159" Height="23">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button Command="{Binding DestroyCommand}" Content="Destroy" Margin="10" HorizontalAlignment="Center" Width="130"/>
+                        </StackPanel>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+
+        </TabControl>
+        <StackPanel HorizontalAlignment="Left" Height="25" VerticalAlignment="Top" Orientation="Horizontal" Margin="0,5,0,0">
+            <Label Content="TFS Connection:"></Label>
+            <Label x:Name="tfsConnection" Cursor="Hand" Content="" Foreground="#FF000CFF" MouseLeftButtonDown="tfsConnection_MouseLeftButtonDown_1"/>
+        </StackPanel>
+        <Label Content="Shai Raiten Blog" HorizontalAlignment="Right" Margin="0,5,5,0" VerticalAlignment="Top" Foreground="#FF003AFF" MouseDown="Label_MouseDown"/>
+    </Grid>
+</Window>
