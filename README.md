@@ -51,6 +51,7 @@ The builds section allows you to search for builds based on their status, you ca
 ## History
 
 11/12/2014 - Added Initial Project
+04/05/2015 - Updates for TFS 2013/2015
 
 ## Credits
 
