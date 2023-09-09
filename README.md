@@ -1,6 +1,17 @@
-# TFS Cleaner
+# Important note regarding this fork
+
+This tool was made by https://github.com/shairai/  
+**Originally made for TFS 2013/2015, I've used it on Azure Devops Server 2022 as well, hence I will add the moniker "ADOCleaner" or "Azure Devops Server Cleaner"**  
+The author's readme is below.
+
+---
+
+
+# TFS / Azure Devops Server Cleaner
 ![ScreenShot](/HelpImages/tfs-cleaner-logo.jpg)
+
 TFS Cleaner is an administrator tool for TFS that provides utility for cleaning Workspaces, Shelves, Source Control, Test Attachments and Builds.
+
 
 ## Installation
 
